@@ -13,7 +13,7 @@ security:
 
 paths:
   # ----- Карточки -----
-  "/api/cards/balances/{userId}": # Балансы карточек пользователя
+  "/api/v1/cards/balances/{userId}": # Балансы карточек пользователя
     get:
       tags:
         - Card Balances
@@ -46,7 +46,7 @@ paths:
       security:
         - bearerAuth: []
 
-  "/api/cards/{cardId}/block": # Заблокировать карту
+  "/api/v1/cards/{cardId}/block": # Заблокировать карту
     post:
       tags:
         - Card Blocking
@@ -80,7 +80,7 @@ paths:
       security:
         - bearerAuth: []
 
-  "/api/cards/change-deposit/{cardId}": # Пополнение баланса карты
+  "/api/v1/cards/change-deposit/{cardId}": # Пополнение баланса карты
     put:
       tags:
         - Balance Operations
@@ -114,7 +114,7 @@ paths:
       security:
         - bearerAuth: []
 
-  "/api/cards/withdraw/{cardId}": # Снятие денег с карты
+  "/api/v1/cards/withdraw/{cardId}": # Снятие денег с карты
     put:
       tags:
         - Balance Operations
@@ -155,7 +155,7 @@ paths:
         - bearerAuth: []
 
   # ----- Управление пользователями -----
-  "/api/users/delete/{userId}": # Удаление пользователя
+  "/api/v1/users/delete/{userId}": # Удаление пользователя
     delete:
       tags:
         - User Management
@@ -182,7 +182,7 @@ paths:
       security:
         - bearerAuth: []
 
-  "/admin/users/add": # Регистрация нового пользователя
+  "/api/v1/admin/users/add": # Регистрация нового пользователя
     post:
       tags:
         - User Management
@@ -211,7 +211,7 @@ paths:
       security:
         - bearerAuth: []
 
-  "/admin/users/password/update": # Обновление пароля пользователя
+  "/api/v1/admin/users/password/update": # Обновление пароля пользователя
     post:
       tags:
         - User Management
@@ -245,7 +245,7 @@ paths:
         - bearerAuth: []
 
   # ----- Управление картами -----
-  "/admin/cards/{userId}": # Добавление карты пользователю
+  "/api/v1/admin/cards/{userId}": # Добавление карты пользователю
     post:
       tags:
         - Card Management
@@ -282,7 +282,7 @@ paths:
       security:
         - bearerAuth: []
 
-  "/api/cards/delete/{cardId}": # Удаление банковской карты
+  "/api/v1/cards/delete/{cardId}": # Удаление банковской карты
     delete:
       tags:
         - Card Management

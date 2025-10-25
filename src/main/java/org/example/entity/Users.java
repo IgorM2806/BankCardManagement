@@ -1,0 +1,46 @@
+package org.example.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "users")
+@Data
+public class Users {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column (name = "surname")
+    private String surname;
+
+    @Column(name = "patronymic", nullable = false)
+    private String patronymic;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private RoleEnum role;
+
+    @Column(name = "password_hash", length = 255, nullable = false)
+    private String passwordHash;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Cards> cards = new HashSet<>();
+
+    public Users() {}
+
+    public Users(String name, String surname, String patronymic,  RoleEnum role, String passwordHash) {
+        this.name = name;
+        this.surname = surname;
+        this.patronymic = patronymic;
+        this.role = role;
+        this.passwordHash = passwordHash;
+    }
+}

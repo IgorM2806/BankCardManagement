@@ -46,39 +46,121 @@ paths:
       security:
         - bearerAuth: []
 
-  "/api/v1/cards/{cardId}/block": # Заблокировать карту
-    post:
-      tags:
-        - Card Blocking
-      operationId: blockCard
-      summary: Block a specific card
-      description: Blocks a card by its unique identifier.
-      parameters:
-        - name: cardId
-          in: path
-          required: true
-          description: ID of the card to block
+  /api/v1/cards/block: # Заблокировать карту
+  post:
+    tags:
+      - Card Blocking
+    operationId: blockCard
+    summary: Блокировка карты
+    description: Блокирует карту по её уникальному идентификатору.
+    requestBody:
+      required: true
+      content:
+        application/json:
           schema:
-            type: integer
-            format: int64
-        - name: X-User-ID
-          in: header
-          required: true
-          description: ID of the authenticated user performing the action
+            type: object
+            properties:
+              userId:
+                type: integer
+                format: int64
+                description: Идентификатор пользователя, выполняющего операцию блокировки
+              cardId:
+                type: integer
+                format: int64
+                description: Уникальный идентификатор заблокированной карты
+    responses:
+      '200':
+        description: Карта успешно заблокирована
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Успешно заблокировано!
+                code:
+                  type: integer
+                  example: 200
+      '403':
+        description: Доступ запрещён
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: Запрещено выполнение операции
+      '404':
+        description: Пользователь не найден
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: Пользователь не найден
+      '500':
+        description: Внутренняя ошибка сервера
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: Ошибка обработки запроса
+
+  /api/v1/cards/unblock: # Разблокировать карту
+  post:
+    tags:
+      - Card Unblocking
+    operationId: unblockCard
+    summary: Разблокировка карты
+    description: Разблокирует ранее заблокированную карту по её уникальному идентификатору.
+    requestBody:
+      required: true
+      content:
+        application/json:
           schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Card blocked successfully
-        '403':
-          description: Access denied
-          content:
-            text/plain:
-              schema:
-                type: string
-      security:
-        - bearerAuth: []
+            type: object
+            properties:
+              userId:
+                type: integer
+                format: int64
+                description: Идентификатор пользователя, запрашивающего разблокировку
+              cardId:
+                type: integer
+                format: int64
+                description: Уникальный идентификатор карты, подлежащей разблокировке
+    responses:
+      '200':
+        description: Карта успешно разблокирована
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Успешно разблокировано!
+                code:
+                  type: integer
+                  example: 200
+      '403':
+        description: Доступ запрещён
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: Операция запрещена
+      '404':
+        description: Пользователь не найден
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: Пользователь не найден
+      '500':
+        description: Внутренняя ошибка сервера
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: Ошибка обработки запроса
 
   "/api/v1/cards/change-deposit/{cardId}": # Пополнение баланса карты
     put:
@@ -379,35 +461,39 @@ components:
     CreateCardDTO:
       type: object
       properties:
-        cardNumber:
+        card_number:
           type: string
-          description: Card number
-        expirationDate:
+          description: Номер карты
+        expiry_date:
           type: string
           format: date
-          description: Expiration date of the card
+          description: Дата окончания срока действия карты
         status:
           type: string
-          description: Status of the card
+          enum: ["ACTIVE", "BLOCKED", "EXPIRED", "INACTIVE"]  # Возможные статусы карты
+          description: Статус карты
         balance:
           type: number
           format: decimal
-          description: Balance on the card
-          
+          minimum: 0  # Баланс не может быть отрицательным
+          description: Текущий баланс на карте
+
     CardBalanceDto:
       type: object
       properties:
-        cardId:
+        card_id:
           type: integer
           format: int64
-          description: Unique identifier of the card
+          description: Уникальный идентификатор карты
         balance:
           type: number
           format: decimal
-          description: Current balance of the card
+          minimum: 0  # Баланс не может быть отрицательным
+          description: Текущий баланс на карте
         currency:
           type: string
-          description: Currency code of the balance
+          pattern: "^[A-Z]{3}$"  # Валюта должна соответствовать формату ISO 4217
+          description: Код валюты баланса
 
     Cards:
       type: object
@@ -415,67 +501,71 @@ components:
         id:
           type: integer
           format: int64
-          description: Unique identifier of the card
-        cardNumber:
+          description: Уникальный идентификатор карты
+        card_number:
           type: string
-          description: Card number
-        expiryDate:
+          description: Номер карты
+        expiry_date:
           type: string
           format: date
-          description: Expiry date of the card
+          description: Срок действия карты
         status:
           type: string
-          description: Status of the card (ACTIVE/BLOCKED)
+          enum: ["ACTIVE", "BLOCKED", "EXPIRED", "INACTIVE"]  # Возможные статусы карты
+          description: Статус карты (ACTIVE/BLOCKED)
 
     TransferData:
       type: object
       required:
-        - userId
-        - sourceCard
-        - targetCard
+        - user_id
+        - source_card
+        - target_card
         - amount
       properties:
-        userId:
+        user_id:
           type: integer
           format: int64
-          description: ID of the user initiating the transfer
-        sourceCard:
+          description: ID пользователя, инициирующего перевод
+        source_card:
           type: integer
           format: int64
-          description: Source card ID
-        targetCard:
+          description: ID отправляющей карты
+        target_card:
           type: integer
           format: int64
-          description: Target card ID
+          description: ID принимающей карты
         amount:
           type: number
           format: decimal
-          description: Amount to transfer
+          minimum: 0  # Сумма перевода не может быть отрицательной
+          description: Сумма перевода
 
     CreateUserDTO:
       type: object
       required:
-        - firstName
+        - first_name
         - surname
         - patronymic
         - role
-        - passwordHash
+        - password_hash
       properties:
-        firstName:
+        first_name:
           type: string
-          description: First name of the user
+          description: Имя пользователя
         surname:
           type: string
-          description: Last name of the user
+          description: Фамилия пользователя
         patronymic:
           type: string
-          description: Patronymic of the user
+          description: Отчество пользователя
         role:
           type: string
-          description: Role assigned to the user
-        passwordHash:
+          description: Роль пользователя
+        password_hash:
           type: string
-          description: Hashed password of the user
+          minLength: 8  # Минимальная длина хеша пароля
+          maxLength: 64  # Максимальная длина хеша пароля
+          description: Хешированный пароль пользователя
 
     Users:
       type: object
@@ -483,22 +573,24 @@ components:
         id:
           type: integer
           format: int64
-          description: Unique identifier of the user
-        firstName:
+          description: Уникальный идентификатор пользователя
+        first_name:
           type: string
-          description: First name of the user
+          description: Имя пользователя
         surname:
           type: string
-          description: Last name of the user
+          description: Фамилия пользователя
         patronymic:
           type: string
-          description: Patronymic of the user
+          description: Отчество пользователя
         role:
           type: string
-          description: Role assigned to the user
-        passwordHash:
+          description: Роль пользователя
+        password_hash:
           type: string
-          description: Hashed password of the user
+          minLength: 8  # Минимальная длина хеша пароля
+          maxLength: 64  # Максимальная длина хеша пароля
+          description: Хешированный пароль пользователя
 
   securitySchemes:
     bearerAuth:
